@@ -10,7 +10,9 @@ import javax.inject.Inject;
 
 import rx.Observable;
 import rx.Subscription;
+import rx.schedulers.Schedulers;
 import rx.subjects.ReplaySubject;
+import rx.android.schedulers.AndroidSchedulers;
 
 /**
  * Created by rcfgnu on 5/17/16.
@@ -39,10 +41,14 @@ public class PersonsInteractor {
     }
 
     private Observable<Person> memory() {
-        return Observable.from(memoryCache);
+        return Observable.from(memoryCache)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 
     private Observable<Person> disk() {
-        return apiService.getPersons().doOnNext(person -> memoryCache.add(person));
+        return apiService.getPersons().doOnNext(person -> memoryCache.add(person))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 }
